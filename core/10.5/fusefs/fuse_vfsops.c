@@ -669,6 +669,7 @@ fuse_vfsop_unmount(mount_t mp, int mntflags, vfs_context_t context)
 
     fuse_rootvp = data->rootvp;
 
+    IOLog("%s: Calling vflush(mp, fuse_rootvp, flags=0x%X);\n", __FUNCTION__, flags);
 #if M_MACFUSE_ENABLE_INTERIM_FSNODE_LOCK && !M_MACFUSE_ENABLE_HUGE_LOCK
     fuse_biglock_unlock(data->biglock);
 #endif
@@ -676,6 +677,7 @@ fuse_vfsop_unmount(mount_t mp, int mntflags, vfs_context_t context)
 #if M_MACFUSE_ENABLE_INTERIM_FSNODE_LOCK && !M_MACFUSE_ENABLE_HUGE_LOCK
     fuse_biglock_lock(data->biglock);
 #endif
+    IOLog("%s:   Done.\n", __FUNCTION__);
     if (err) {
 #if M_MACFUSE_ENABLE_INTERIM_FSNODE_LOCK && !M_MACFUSE_ENABLE_HUGE_LOCK
         fuse_biglock_unlock(data->biglock);
@@ -697,7 +699,9 @@ fuse_vfsop_unmount(mount_t mp, int mntflags, vfs_context_t context)
     fdisp_init(&fdi, 0 /* no data to send along */);
     fdisp_make(&fdi, FUSE_DESTROY, mp, FUSE_ROOT_ID, context);
 
+    IOLog("%s: Waiting for reply from FUSE_DESTROY.\n", __FUNCTION__);
     err = fdisp_wait_answ(&fdi);
+    IOLog("%s:   Reply received.\n", __FUNCTION__);
     if (!err) {
         fuse_ticket_drop(fdi.tick);
     }
@@ -713,6 +717,7 @@ alreadydead:
     needsignal = data->dataflags & FSESS_KILL_ON_UNMOUNT;
     daemonpid = data->daemonpid;
 
+    IOLog("%s: Calling vnode_rele(fuse_rootp);\n", __FUNCTION__);
 #if M_MACFUSE_ENABLE_INTERIM_FSNODE_LOCK && !M_MACFUSE_ENABLE_HUGE_LOCK
     fuse_biglock_unlock(data->biglock);
 #endif
@@ -720,9 +725,11 @@ alreadydead:
 #if M_MACFUSE_ENABLE_INTERIM_FSNODE_LOCK && !M_MACFUSE_ENABLE_HUGE_LOCK
     fuse_biglock_lock(data->biglock);
 #endif
+    IOLog("%s:   Done.\n", __FUNCTION__);
 
     data->rootvp = NULLVP;
 
+    IOLog("%s: Calling vflush(mp, NULLVP, FORCECLOSE);\n", __FUNCTION__);
 #if M_MACFUSE_ENABLE_INTERIM_FSNODE_LOCK && !M_MACFUSE_ENABLE_HUGE_LOCK
     fuse_biglock_unlock(data->biglock);
 #endif
@@ -730,6 +737,7 @@ alreadydead:
 #if M_MACFUSE_ENABLE_INTERIM_FSNODE_LOCK && !M_MACFUSE_ENABLE_HUGE_LOCK
     fuse_biglock_lock(data->biglock);
 #endif
+    IOLog("%s:   Done.\n", __FUNCTION__);
 
     fuse_device_lock(fdev);
 
