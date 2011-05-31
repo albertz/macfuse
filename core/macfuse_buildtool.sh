@@ -208,10 +208,10 @@ function m_set_platform()
     fi
 
     # XXX For now
-    if [ "$m_platform" == "10.6" ]
-    then
-        m_platform="10.5"
-    fi
+    #if [ "$m_platform" == "10.6" ]
+    #then
+    #    m_platform="10.5"
+    #fi
 
     case "$m_platform" in
     10.4*)
